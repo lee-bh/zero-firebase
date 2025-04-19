@@ -4,67 +4,80 @@
     </head>
     <body>
         <h1>Welcome to my website</h1>
-        <section id="userList"></section>
+        <section id="userList">
+            <ul id="userList"></ul>
+        </section>
         <section id="userForm">
-            <input type="text" id="name" placeholder="Name">
+            <input type="text" id="firstName" placeholder="First Name">
+            <input type="text" id="lastName" placeholder="Last Name">
             <input type="text" id="email" placeholder="Email">
-            <input type="text" id="age" placeholder="Age">
             <button id="addUser">Add User</button>
         </section>
         <script type="module">
-        
+            // Import the functions you need from the SDKs you need
             import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-            import { getFirestore, addDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
-        
+            import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+            // TODO: Add SDKs for Firebase products that you want to use
+            // https://firebase.google.com/docs/web/setup#available-libraries
+          
+            // Your web app's Firebase configuration
             const firebaseConfig = {
-              apiKey: "AIzaSyAP2u38_OjQiJA0BWObMY-9h0jDqrHIt6s",
-              authDomain: "user-list-e19cb.firebaseapp.com",
-              projectId: "user-list-e19cb",
-              storageBucket: "user-list-e19cb.firebasestorage.app",
-              messagingSenderId: "1055556256997",
-              appId: "1:1055556256997:web:066027959af10d2562000c"
+              apiKey: "AIzaSyCEtsBM1mMjvWn27smGm57ovcjF_-jHG5M",
+              authDomain: "zerobase-635ac.firebaseapp.com",
+              projectId: "zerobase-635ac",
+              storageBucket: "zerobase-635ac.firebasestorage.app",
+              messagingSenderId: "1097993862105",
+              appId: "1:1097993862105:web:acdadcfc9906736615b7c8"
             };
           
             // Initialize Firebase
             const app = initializeApp(firebaseConfig);
             const db = getFirestore(app);
-            console.log(db);
-
-            try {
-                const docRef = await addDoc(collection(db, "users"), {
-                    first: "Ada",
-                    last: "Lovelace",
-                    born: 1815
-                });
-                console.log("Document written with ID: ", docRef.id);
-            } catch (e) {
-                console.error("Error adding document: ", e);
-            }
 
             document.getElementById("addUser").addEventListener("click", async () => {
-                const name = document.getElementById("name").value;
+                const firstName = document.getElementById("firstName").value;
+                const lastName = document.getElementById("lastName").value;
                 const email = document.getElementById("email").value;
-                const age = document.getElementById("age").value;
-                await addDoc(collection(db, "users"), {
-                    name: name,
-                    email: email,
-                    age: age
+
+                const docRef = await addDoc(collection(db, "users"), {
+                    first: firstName,
+                    last: lastName,
+                    email: email
                 });
                 fetchUsers();
+                console.log("Document written with ID: ", docRef.id);
             });
+
+            async function fetchUsers() {
+                const userList = document.getElementById("userList");
+                userList.innerHTML = "";
+                const querySnapshot = await getDocs(collection(db, "users"));
+                querySnapshot.forEach((doc) => {
+                    const user = doc.data();
+                    const li = document.createElement("li");
+                    li.textContent = `${user.first} ${user.last} - ${user.email}`;
+                    const deleteButton = document.createElement("button");
+                    deleteButton.textContent = "Delete";
+                    deleteButton.setAttribute("data-id", doc.id);
+                    li.appendChild(deleteButton);
+                    userList.appendChild(li);
+                });
+            }
 
             fetchUsers();
 
-            async function fetchUsers() {
-                const querySnapshot = await getDocs(collection(db, "users"));
-                const userList = document.getElementById("userList");
-                querySnapshot.forEach((doc) => {
-                    const userItem = document.createElement("div");
-                    userItem.innerHTML = `${doc.id} => ${doc.data().name}`;
-                    userList.appendChild(userItem);
-                });
+            const userList = document.getElementById("userList");
+            userList.addEventListener("click", async (e) => {
+                if (e.target.tagName === "BUTTON") {
+                    const userId = e.target.getAttribute("data-id");
+                    await deleteUser(userId);
+                }
+            });
+
+            async function deleteUser(userId) {
+                const userDoc = doc(db, "users", userId);
+                await deleteDoc(userDoc);
+                fetchUsers();
             }
-        
-            
           </script>
     </body>

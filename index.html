@@ -1,0 +1,70 @@
+<html>
+    <head>
+        <title>My Website</title>
+    </head>
+    <body>
+        <h1>Welcome to my website</h1>
+        <section id="userList"></section>
+        <section id="userForm">
+            <input type="text" id="name" placeholder="Name">
+            <input type="text" id="email" placeholder="Email">
+            <input type="text" id="age" placeholder="Age">
+            <button id="addUser">Add User</button>
+        </section>
+        <script type="module">
+        
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+            import { getFirestore, addDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+        
+            const firebaseConfig = {
+              apiKey: "AIzaSyAP2u38_OjQiJA0BWObMY-9h0jDqrHIt6s",
+              authDomain: "user-list-e19cb.firebaseapp.com",
+              projectId: "user-list-e19cb",
+              storageBucket: "user-list-e19cb.firebasestorage.app",
+              messagingSenderId: "1055556256997",
+              appId: "1:1055556256997:web:066027959af10d2562000c"
+            };
+          
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            console.log(db);
+
+            try {
+                const docRef = await addDoc(collection(db, "users"), {
+                    first: "Ada",
+                    last: "Lovelace",
+                    born: 1815
+                });
+                console.log("Document written with ID: ", docRef.id);
+            } catch (e) {
+                console.error("Error adding document: ", e);
+            }
+
+            document.getElementById("addUser").addEventListener("click", async () => {
+                const name = document.getElementById("name").value;
+                const email = document.getElementById("email").value;
+                const age = document.getElementById("age").value;
+                await addDoc(collection(db, "users"), {
+                    name: name,
+                    email: email,
+                    age: age
+                });
+                fetchUsers();
+            });
+
+            fetchUsers();
+
+            async function fetchUsers() {
+                const querySnapshot = await getDocs(collection(db, "users"));
+                const userList = document.getElementById("userList");
+                querySnapshot.forEach((doc) => {
+                    const userItem = document.createElement("div");
+                    userItem.innerHTML = `${doc.id} => ${doc.data().name}`;
+                    userList.appendChild(userItem);
+                });
+            }
+        
+            
+          </script>
+    </body>
